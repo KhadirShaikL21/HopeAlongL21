@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         withCredentials: true,
         timeout: 5000
       });
-      setUser(res.data);
+      setUser(res.data.user);
     } catch (err) {
       setUser(null);
       setError(err.response?.data?.message || 'Session expired. Please login again.');

@@ -165,6 +165,11 @@ exports.deleteRide = async (req, res) => {
     const ride = await Ride.findById(req.params.id);
     if (!ride) return res.status(404).json({ msg: "Ride not found" });
 
+    // Debug logs
+    console.log('Delete Ride: req.user:', req.user);
+    console.log('Delete Ride: ride.captain:', ride.captain);
+
+    if (!req.user) return res.status(401).json({ msg: "Not authenticated" });
     if (ride.captain.toString() !== req.user.id)
       return res.status(403).json({ msg: "Unauthorized" });
 
@@ -193,9 +198,17 @@ exports.deleteRide = async (req, res) => {
 // GET /api/rides/:id - Get a single ride by ID
 exports.getRideById = async (req, res) => {
   try {
-    const ride = await Ride.findById(req.params.id).populate('captain', 'name email');
+    const ride = await Ride.findById(req.params.id)
+      .populate('captain', 'name email phone'); // Add phone if you want to show it
     if (!ride) return res.status(404).json({ msg: "Ride not found" });
-    res.status(200).json({ ride });
+    // Format date and time for UI
+    const formattedRide = {
+      ...ride.toObject(),
+      date: ride.date ? ride.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '',
+      time: ride.time,
+      createdAt: ride.createdAt ? ride.createdAt.toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+    };
+    res.status(200).json({ ride: formattedRide });
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }

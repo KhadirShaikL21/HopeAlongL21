@@ -1,7 +1,8 @@
 const Notification = require('../models/Notification');
 const sendEmailNotification = require('./sendEmailNotification');
 
-const sendNotification = async (userId, message, app) => {
+// Add email as a parameter
+const sendNotification = async (userId, message, app, email) => {
   try {
     const notif = new Notification({ user: userId, message });
     await notif.save();
@@ -17,11 +18,10 @@ const sendNotification = async (userId, message, app) => {
       });
     }
 
-     if(email) {
+    // Only send email if email is provided
+    if (email) {
       await sendEmailNotification(email, 'New Notification from HopeAlong', message);
     }
-        
-
   } catch (err) {
     console.error("❌ Notification error:", err.message);
   }
