@@ -20,7 +20,7 @@ const Dashboard = () => {
       refreshUser();
     }
     // eslint-disable-next-line
-  }, []);
+  }, [user, authLoading]);
 
   // 2. Only fetch dashboard data when user is loaded
   useEffect(() => {
