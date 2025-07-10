@@ -39,6 +39,15 @@ exports.respondToRequest = async (req, res) => {
     if (request.ride.captain.toString() !== req.user.id)
       return res.status(403).json({ msg: "Unauthorized" });
 
+    // Only decrease seats if approved and not already approved
+    if (status === 'approved' && request.status !== 'approved') {
+      if (request.ride.seatsAvailable < request.seatsRequested) {
+        return res.status(400).json({ msg: "Not enough seats available" });
+      }
+      request.ride.seatsAvailable -= request.seatsRequested;
+      await request.ride.save();
+    }
+
     request.status = status;
     await request.save();
 
@@ -78,4 +87,23 @@ exports.getCaptainRideRequests = async (req, res) => {
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
+};
+
+exports.bookRide = async (req, res) => {
+  const { rideId, seatsRequested } = req.body;
+
+  // Find the ride
+  const ride = await Ride.findById(rideId);
+  if (!ride) return res.status(404).json({ msg: "Ride not found" });
+
+  // Check if enough seats are available
+  if (ride.seatsAvailable < seatsRequested) {
+    return res.status(400).json({ msg: "Not enough seats available" });
+  }
+
+  // Decrease seats
+  ride.seatsAvailable -= seatsRequested;
+  await ride.save();
+
+  res.json({ msg: "Booking successful" });
 };
