@@ -2,13 +2,26 @@ import React, { useEffect, useState } from "react";
 
 const Profile = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start as loading
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/auth/me", { credentials: "include" })
-      .then(res => res.json())
-      .then(data => setForm({ name: data.name, email: data.email, password: "" }));
-  }, []);
+useEffect(() => {
+  setLoading(true);
+  fetch("http://localhost:5000/api/auth/me", { credentials: "include" })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch profile");
+      return res.json();
+    })
+    .then(data => {
+      setForm({
+        name: data.user.name || "",
+        email: data.user.email || "",
+        password: ""
+      });
+    })
+    .catch(() => setError("Failed to load profile"))
+    .finally(() => setLoading(false));
+}, []);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -28,6 +41,22 @@ const Profile = () => {
       alert("Failed to update profile.");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-lg mx-auto mt-10 bg-white rounded-xl shadow-lg p-8">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-lg mx-auto mt-10 bg-white rounded-xl shadow-lg p-8">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto mt-10 bg-white rounded-xl shadow-lg p-8">
