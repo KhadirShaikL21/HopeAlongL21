@@ -77,6 +77,7 @@ useEffect(() => {
           required
           placeholder="Email"
           className="w-full border rounded px-3 py-2"
+          disabled
         />
         <input
           name="password"
