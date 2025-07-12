@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { 
-  FaSearch, 
-  FaUser, 
-  FaCalendarAlt, 
-  FaMapMarkerAlt, 
-  FaCar, 
-  FaMoneyBillWave, 
+import {
+  FaSearch,
+  FaUser,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaCar,
+  FaMoneyBillWave,
   FaUsers,
   FaStar,
   FaRegStar,
@@ -14,18 +14,56 @@ import {
 } from "react-icons/fa";
 import { IoTime } from "react-icons/io5";
 import { motion } from "framer-motion";
+import axios from "axios";
+
+const GEO_API_KEY = "df8a98a451mshcf053dbb1d0a300p1316b6jsnc5fc3d394c49";
+const GEO_API_HOST = "wft-geo-db.p.rapidapi.com";
+
+// Only one fetchCitySuggestions function, using axios
+const fetchCitySuggestions = async (query) => {
+  if (!query) return [];
+  try {
+    const res = await axios.get(
+      `https://${GEO_API_HOST}/v1/geo/cities?namePrefix=${encodeURIComponent(query)}&limit=5&types=CITY`,
+      {
+        headers: {
+          "X-RapidAPI-Key": GEO_API_KEY,
+          "X-RapidAPI-Host": GEO_API_HOST,
+        },
+      }
+    );
+    return res.data.data.map((city) => city.city); // Only city name
+  } catch (error) {
+    console.error("GeoDB error:", error.message);
+    return [];
+  }
+};
 
 const Rides = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState(() => JSON.parse(localStorage.getItem("rideSearch")) || { from: "", to: "", date: "" });
+  const [search, setSearch] = useState({ from: "", to: "", date: "" });
   const [activeTab, setActiveTab] = useState("all");
   const [sortBy, setSortBy] = useState("departure");
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  // Filters state for right sidebar
+  const [filters, setFilters] = useState({
+    vehicleType: "",
+    price: 2000,
+    arrivalTime: "",
+    seats: 1,
+  });
+  const [filteredRides, setFilteredRides] = useState([]);
+  const fromInputRef = useRef();
+  const toInputRef = useRef();
 
   const fetchRides = async (params = {}) => {
     setLoading(true);
     let query = Object.entries(params)
-      .filter(([k, v]) => v)
+      .filter(([_, v]) => v)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
       .join("&");
     const url = query
@@ -38,17 +76,17 @@ const Rides = () => {
   };
 
   useEffect(() => {
-    fetchRides(search);
+    fetchRides(); // Fetch all rides on first load
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!search.from && !search.to && !search.date) {
-      alert("Please enter at least one search field.");
-      return;
+      fetchRides(); // Fetch all if search is empty
+    } else {
+      fetchRides(search); // Fetch filtered
     }
-    localStorage.setItem("rideSearch", JSON.stringify(search));
-    fetchRides(search);
+    setSearch({ from: "", to: "", date: "" }); // Clear search fields
   };
 
   const handleRequest = async (rideId) => {
@@ -75,43 +113,24 @@ const Rides = () => {
   const getRandomRating = () => (Math.random() * 2 + 3).toFixed(1);
 
   const sortRides = (ridesToSort) => {
-    const sortedRides = [...ridesToSort];
-    
-    switch(sortBy) {
+    const sorted = [...ridesToSort];
+    switch (sortBy) {
       case "departure":
-        // Sort by date and time
-        sortedRides.sort((a, b) => {
-          const dateA = new Date(`${a.date} ${a.time}`);
-          const dateB = new Date(`${b.date} ${b.time}`);
-          return dateA - dateB;
-        });
+        sorted.sort((a, b) => new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`));
         break;
-        
       case "price-low":
-        // Sort by price low to high
-        sortedRides.sort((a, b) => a.costPerSeat - b.costPerSeat);
+        sorted.sort((a, b) => a.costPerSeat - b.costPerSeat);
         break;
-        
       case "price-high":
-        // Sort by price high to low
-        sortedRides.sort((a, b) => b.costPerSeat - a.costPerSeat);
+        sorted.sort((a, b) => b.costPerSeat - a.costPerSeat);
         break;
-        
       case "rating":
-        // Sort by rating (using the random rating function)
-        sortedRides.sort((a, b) => {
-          const ratingA = parseFloat(getRandomRating());
-          const ratingB = parseFloat(getRandomRating());
-          return ratingB - ratingA; // Highest first
-        });
+        sorted.sort((a, b) => parseFloat(getRandomRating()) - parseFloat(getRandomRating()));
         break;
-        
       default:
-        // No sorting
         break;
     }
-    
-    return sortedRides;
+    return sorted;
   };
 
   useEffect(() => {
@@ -120,262 +139,460 @@ const Rides = () => {
     }
   }, [sortBy]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-14"
-        >
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-500">
-              Find Your Perfect Ride
-            </span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Connect with trusted drivers and passengers for convenient, affordable rides.
-          </p>
-        </motion.div>
+  // Handlers for input changes and suggestion selection
+  const handleFromChange = async (e) => {
+    const value = e.target.value;
+    setSearch((prev) => ({ ...prev, from: value }));
+    if (value.length > 1) {
+      const suggestions = await fetchCitySuggestions(value);
+      setFromSuggestions(suggestions);
+      setShowFromSuggestions(true);
+    } else {
+      setFromSuggestions([]);
+      setShowFromSuggestions(false);
+    }
+  };
 
-        {/* Search Card */}
+  const handleToChange = async (e) => {
+    const value = e.target.value;
+    setSearch((prev) => ({ ...prev, to: value }));
+    if (value.length > 1) {
+      const suggestions = await fetchCitySuggestions(value);
+      setToSuggestions(suggestions);
+      setShowToSuggestions(true);
+    } else {
+      setToSuggestions([]);
+      setShowToSuggestions(false);
+    }
+  };
+
+  const handleFromSuggestionClick = (suggestion) => {
+    setSearch((prev) => ({ ...prev, from: suggestion }));
+    setFromSuggestions([]);
+    setShowFromSuggestions(false);
+  };
+
+  const handleToSuggestionClick = (suggestion) => {
+    setSearch((prev) => ({ ...prev, to: suggestion }));
+    setToSuggestions([]);
+    setShowToSuggestions(false);
+  };
+
+  // Hide suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        fromInputRef.current &&
+        !fromInputRef.current.contains(event.target)
+      ) {
+        setShowFromSuggestions(false);
+      }
+      if (
+        toInputRef.current &&
+        !toInputRef.current.contains(event.target)
+      ) {
+        setShowToSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Update filter logic to always show filteredRides after Apply Filters, and add Clear Filters button if no results
+  const applyFilters = (e) => {
+    if (e) e.preventDefault();
+    let filtered = rides.filter((ride) => {
+      let match = true;
+      // Normalize both filter and ride vehicleType to lowercase for comparison
+      if (filters.vehicleType && ride.vehicleType?.toLowerCase() !== filters.vehicleType.toLowerCase()) match = false;
+      if (filters.price && ride.costPerSeat > Number(filters.price)) match = false;
+      if (filters.arrivalTime && ride.time < filters.arrivalTime) match = false;
+      if (filters.seats && ride.seatsAvailable < Number(filters.seats)) match = false;
+      return match;
+    });
+    setFilteredRides(filtered);
+  };
+
+  // Always show filteredRides, not rides, in results
+  useEffect(() => {
+    setFilteredRides(rides);
+  }, [rides]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-100 py-12 px-0 sm:px-0 lg:px-0">
+      <div className="max-w-7xl mx-auto">
+        {/* Search Card (full width, always on top, now sticky) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-10 border border-gray-100"
+          className="bg-white/95 rounded-2xl p-6 mb-10 border border-blue-100 mx-4 md:mx-0 sticky top-0 z-30 backdrop-blur-md border-b-2 border-blue-100"
         >
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="relative col-span-2">
+            <div className="relative col-span-2" ref={fromInputRef}>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <div className="flex flex-col items-center">
-                  <FaMapMarkerAlt className="text-indigo-500 mb-1" />
-                  <div className="w-0.5 h-4 bg-gray-300"></div>
+                  <FaMapMarkerAlt className="text-blue-600 mb-1" />
+                  <div className="w-0.5 h-4 bg-blue-200"></div>
                 </div>
               </div>
               <input
                 type="text"
                 placeholder="Leaving from..."
                 value={search.from}
-                onChange={e => setSearch({ ...search, from: e.target.value })}
-                className="pl-10 py-3 w-full rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-300 transition"
-                aria-label="From location"
+                onChange={handleFromChange}
+                className="pl-10 py-3 w-full rounded-xl border border-blue-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-blue-300 transition bg-blue-50"
+                autoComplete="off"
               />
+              {showFromSuggestions && fromSuggestions.length > 0 && (
+                <ul className="absolute z-10 left-0 right-0 bg-white border border-blue-200 rounded-xl mt-1 shadow-lg max-h-56 overflow-y-auto">
+                  {fromSuggestions.map((suggestion, idx) => (
+                    <li
+                      key={idx}
+                      className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                      onClick={() => handleFromSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <div className="relative col-span-2">
+            <div className="relative col-span-2" ref={toInputRef}>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaMapMarkerAlt className="text-red-500" />
+                <FaMapMarkerAlt className="text-green-600" />
               </div>
               <input
                 type="text"
                 placeholder="Going to..."
                 value={search.to}
-                onChange={e => setSearch({ ...search, to: e.target.value })}
-                className="pl-10 py-3 w-full rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-300 transition"
-                aria-label="To location"
+                onChange={handleToChange}
+                className="pl-10 py-3 w-full rounded-xl border border-green-200 focus:ring-2 focus:ring-green-400 focus:border-green-400 hover:border-green-300 transition bg-green-50"
+                autoComplete="off"
               />
+              {showToSuggestions && toSuggestions.length > 0 && (
+                <ul className="absolute z-10 left-0 right-0 bg-white border border-green-200 rounded-xl mt-1 shadow-lg max-h-56 overflow-y-auto">
+                  {toSuggestions.map((suggestion, idx) => (
+                    <li
+                      key={idx}
+                      className="px-4 py-2 hover:bg-green-50 cursor-pointer"
+                      onClick={() => handleToSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaCalendarAlt className="text-gray-500" />
+                <FaCalendarAlt className="text-blue-400" />
               </div>
               <input
                 type="date"
                 min={new Date().toISOString().split("T")[0]}
                 value={search.date}
                 onChange={e => setSearch({ ...search, date: e.target.value })}
-                className="pl-10 py-3 w-full rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-300 transition"
-                aria-label="Date"
+                className="pl-10 py-3 w-full rounded-xl border border-blue-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-blue-300 transition bg-blue-50"
               />
-            </div>
-            <div className="md:col-span-4 flex space-x-3 overflow-x-auto pb-2">
-              {["all", "today", "tomorrow", "weekend"].map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                    activeTab === tab 
-                      ? 'bg-indigo-600 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
             </div>
             <button
               type="submit"
-              className="bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white font-semibold rounded-xl py-3 px-6 flex items-center justify-center shadow-md hover:shadow-lg transition-all"
+              className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-white font-semibold rounded-xl py-3 px-6 flex items-center justify-center shadow-md hover:shadow-lg transition-all"
             >
               <FaSearch className="mr-2" /> Search Rides
             </button>
           </form>
         </motion.div>
-
-        {/* Results Count */}
-        {!loading && rides.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-between items-center mb-6"
-          >
-            <h2 className="text-xl font-semibold text-gray-800">
-              {rides.length} {rides.length === 1 ? 'Ride' : 'Rides'} Available
-            </h2>
-            <div className="flex items-center text-sm text-gray-500">
-              <span className="mr-2">Sort by:</span>
-              <select 
-                className="bg-white border border-gray-200 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+        {/* Main Content: Filters (left) + Rides (right) in a row */}
+        <div className="flex flex-row gap-8 w-full">
+          {/* Left Sidebar: Filters (static, starts after search) */}
+          <aside className="hidden md:block min-w-[340px] max-w-sm w-full bg-white/90 rounded-2xl p-10 border border-blue-100 h-fit sticky top-44 self-start mt-6">
+            <h3 className="text-lg font-bold mb-4 text-blue-900">Filters</h3>
+            {/* Vehicle Type Filter */}
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-2">Vehicle Type</label>
+              <select
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+                value={filters.vehicleType}
+                onChange={e => setFilters(f => ({ ...f, vehicleType: e.target.value }))}
               >
-                <option value="departure">Departure Time</option>
-                <option value="price-low">Price (Low to High)</option>
-                <option value="price-high">Price (High to Low)</option>
-                <option value="rating">Rating</option>
+                <option value="">All</option>
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+                <option value="van">Van</option>
+                <option value="auto">Auto</option>
               </select>
             </div>
-          </motion.div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-center items-center h-64"
-            role="status"
-          >
-            <div className="flex flex-col items-center">
-              <div className="animate-spin h-12 w-12 border-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
-              <p className="text-gray-600">Finding the best rides for you...</p>
+            {/* Price Range Filter */}
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-2">Price Range (₹)</label>
+              <input
+                type="range"
+                min="100"
+                max="2000"
+                step="50"
+                value={filters.price}
+                onChange={e => setFilters(f => ({ ...f, price: e.target.value }))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>₹100</span><span>₹{filters.price}</span>
+              </div>
             </div>
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {!loading && rides.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-sm p-10 text-center max-w-2xl mx-auto"
-          >
-            <div className="w-40 h-40 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <div className="text-5xl text-indigo-400">🚗</div>
+            {/* Arrival Time Filter */}
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-2">Arrival Time (after)</label>
+              <input
+                type="time"
+                value={filters.arrivalTime}
+                onChange={e => setFilters(f => ({ ...f, arrivalTime: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">No rides matching your search</h2>
-            <p className="text-gray-500 mb-6">Try adjusting your filters or be the first to offer a ride on this route!</p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => {
-                  setSearch({ from: "", to: "", date: "" });
-                  localStorage.removeItem("rideSearch");
-                }}
-                className="bg-white border border-gray-300 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-50 transition"
-              >
-                Clear Filters
-              </button>
-              <Link
-                to="/create-ride"
-                className="bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition flex items-center"
-              >
-                <FaCar className="mr-2" /> Offer a Ride
-              </Link>
+            {/* Seats Available Filter */}
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-2">Min. Seats Available</label>
+              <input
+                type="number"
+                min="1"
+                value={filters.seats}
+                onChange={e => setFilters(f => ({ ...f, seats: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2"
+              />
             </div>
-          </motion.div>
-        )}
+            <button
+              className="w-full bg-blue-600 text-white rounded-lg py-2 font-semibold mt-4 hover:bg-blue-700 transition"
+              onClick={applyFilters}
+            >
+              Apply Filters
+            </button>
+          </aside>
 
-        {/* Rides List */}
-        {!loading && rides.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 gap-6"
-          >
-            {sortRides(rides).map((ride, index) => (
-              <motion.div
-                key={ride._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-all"
-              >
-                <div className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    {/* Ride Info */}
-                    <div className="flex-1">
-                      <div className="flex items-start">
-                        <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                          <FaCar className="text-indigo-600 text-xl" />
-                        </div>
-                        <div>
-                          <Link 
-                            to={`/rides/${ride._id}`} 
-                            className="text-xl font-bold text-gray-800 hover:text-indigo-600 transition flex items-center"
-                          >
-                            {ride.from} <FaChevronRight className="mx-1 text-gray-400 text-sm" /> {ride.to}
-                          </Link>
-                          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-                            <div className="flex items-center text-gray-600">
-                              <IoTime className="mr-2 text-indigo-400" />
-                              <span>{ride.date} • {formatTime(ride.time)}</span>
-                            </div>
-                            <div className="flex items-center text-gray-600">
-                              <FaUsers className="mr-2 text-indigo-400" />
-                              <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                                {ride.seatsAvailable} seats left
-                              </span>
-                            </div>
-                            <div className="flex items-center text-gray-600">
-                              <FaMoneyBillWave className="mr-2 text-indigo-400" />
-                              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                                ₹{ride.costPerSeat}/seat
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Driver & Action */}
-                    <div className="mt-4 md:mt-0 md:ml-6 md:text-right">
-                      <div className="flex md:flex-col items-center md:items-end mb-3">
-                        <div className="flex items-center mr-3 md:mr-0 md:mb-2">
-                          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
-                            <FaUser className="text-indigo-600" />
-                          </div>
-                          <div className="text-sm">
-                            <div className="font-medium">{ride.captain?.name}</div>
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                i < Math.floor(getRandomRating()) ? 
-                                  <FaStar key={i} className="text-yellow-400 text-xs" /> : 
-                                  <FaRegStar key={i} className="text-yellow-400 text-xs" />
-                              ))}
-                              <span className="ml-1 text-gray-500 text-xs">{getRandomRating()}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleRequest(ride._id)}
-                        className="bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-all shadow-sm hover:shadow-md"
-                      >
-                        Book Now
-                      </button>
-                    </div>
+          {/* Mobile Filters: horizontal bar below search, above rides */}
+          <div className="block md:hidden w-full mb-6 mt-6">
+            <div className="bg-white/90 rounded-2xl p-6 border border-blue-100 flex flex-col gap-6">
+              <div className="flex flex-wrap gap-4">
+                {/* Vehicle Type */}
+                <div className="flex-1 min-w-[120px]">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Vehicle</label>
+                  <select
+                    className="w-full rounded-lg border border-gray-200 px-2 py-1 text-sm"
+                    value={filters.vehicleType}
+                    onChange={e => setFilters(f => ({ ...f, vehicleType: e.target.value }))}
+                  >
+                    <option value="">All</option>
+                    <option value="car">Car</option>
+                    <option value="bike">Bike</option>
+                    <option value="van">Van</option>
+                    <option value="auto">Auto</option>
+                  </select>
+                </div>
+                {/* Price Range */}
+                <div className="flex-1 min-w-[120px]">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Max Price</label>
+                  <input
+                    type="range"
+                    min="100"
+                    max="2000"
+                    step="50"
+                    value={filters.price}
+                    onChange={e => setFilters(f => ({ ...f, price: e.target.value }))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-0.5">
+                    <span>₹100</span><span>₹{filters.price}</span>
                   </div>
                 </div>
+                {/* Arrival Time */}
+                <div className="flex-1 min-w-[120px]">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Arrival After</label>
+                  <input
+                    type="time"
+                    value={filters.arrivalTime}
+                    onChange={e => setFilters(f => ({ ...f, arrivalTime: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-2 py-1 text-sm"
+                  />
+                </div>
+                {/* Seats */}
+                <div className="flex-1 min-w-[120px]">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Min Seats</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={filters.seats}
+                    onChange={e => setFilters(f => ({ ...f, seats: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-2 py-1 text-sm"
+                  />
+                </div>
+              </div>
+              <button
+                className="w-full bg-blue-600 text-white rounded-lg py-2 font-semibold hover:bg-blue-700 transition"
+                onClick={applyFilters}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Right Content Area: Rides and Results */}
+          <div className="flex-1 min-h-[70vh]">
+            {/* Results Count & Sorting */}
+            {!loading && rides.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-row items-center justify-between mb-6 gap-4"
+              >
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {rides.length} {rides.length === 1 ? "Ride" : "Rides"} Available
+                </h2>
+                <div className="flex items-center text-sm text-gray-500 ml-auto">
+                  <span className="mr-2">Sort by:</span>
+                  <select
+                    className="bg-white border border-gray-200 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                  >
+                    <option value="price-low">Price (Low to High)</option>
+                    <option value="price-high">Price (High to Low)</option>
+                    <option value="rating">Rating</option>
+                  </select>
+                </div>
               </motion.div>
-            ))}
-          </motion.div>
-        )}
+            )}
+
+            {/* Loading */}
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center items-center h-64"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="animate-spin h-12 w-12 border-4 border-indigo-500 border-t-transparent rounded-full mb-4"></div>
+                  <p className="text-gray-600">Finding the best rides for you...</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Ride List */}
+            {!loading && filteredRides.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-col gap-6"
+              >
+                {sortRides(filteredRides)
+                  .filter((ride) => ride.seatsAvailable > 0)
+                  .map((ride, index) => (
+                    <motion.div
+                      key={ride._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="bg-white rounded-2xl shadow-md overflow-hidden border border-blue-100 transition-all w-full max-w-3xl mx-auto min-h-[180px] p-8 sm:p-10"
+                    >
+                      {/* Strictly 2-row card layout */}
+                      <div className="flex flex-col gap-6">
+                        {/* Row 1: User, Route, Price */}
+                        <div className="flex flex-row items-center justify-between gap-4 py-4">
+                          {/* User Details (left) */}
+                          <div className="flex items-center gap-3 min-w-[120px]">
+                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              <FaUser className="text-indigo-600 text-lg" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-bold text-gray-800 text-sm truncate max-w-[80px]">{ride.captain?.name}</span>
+                              <div className="flex items-center mt-0.5">
+                                {[...Array(5)].map((_, i) =>
+                                  i < Math.floor(getRandomRating()) ? (
+                                    <FaStar key={i} className="text-yellow-400 text-xs" />
+                                  ) : (
+                                    <FaRegStar key={i} className="text-yellow-400 text-xs" />
+                                  )
+                                )}
+                                <span className="ml-1 text-gray-500 text-xs">{getRandomRating()}</span>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Source to Destination (center) */}
+                          <div className="flex-1 flex flex-col items-center min-w-0">
+                            <div className="flex items-center gap-2 text-lg font-bold text-gray-900 truncate">
+                              <span className="truncate max-w-[100px]">{ride.from}</span>
+                              <FaChevronRight className="mx-1 text-gray-300 text-xl" />
+                              <span className="truncate max-w-[100px]">{ride.to}</span>
+                            </div>
+                            {/* Optionally, add vehicle type below route */}
+                            
+                          </div>
+                          {/* Price (right, where Book Now was) */}
+                          <div className="flex items-center text-base">
+                            <span className="text-green-600 font-extrabold text-2x">
+                              ₹{ride.costPerSeat}
+                            </span>
+                            <span className="text-xs text-black font-medium ml-0">/seat</span>
+                          </div>
+                        </div>
+                        {/* Row 2: Ride Details + Book Now at bottom right */}
+                        <div className="flex flex-row flex-wrap items-center justify-between gap-3 border-t border-blue-50 pt-5 pb-2 relative">
+                          {/* Date & Time */}
+                          <div className="flex items-center text-gray-500 gap-2 text-base">
+                            <FaCalendarAlt className="text-indigo-400 mr-1" />
+                            <span>{ride.date ? new Date(ride.date).toISOString().split('T')[0] : ''}</span>
+                            <span className="mx-2">•</span>
+                            <IoTime className="text-indigo-400 mr-1" />
+                            <span>{formatTime(ride.time)}</span>
+                          </div>
+                          {/* Seats Left */}
+                          <div className="flex items-center text-gray-500 gap-2 text-base">
+                            <FaUsers className="text-indigo-400 mr-1" />
+                            <span className="bg-indigo-50 text-indigo-700 px-4 py-1 rounded-full text-base font-semibold">
+                              {ride.seatsAvailable} seats left
+                            </span>
+                          </div>
+                          {/* Vehicle Type (optional) */}
+                          {ride.vehicleType && (
+                            <div className="flex items-center text-gray-500 gap-2 text-base">
+                              <FaCar className="text-indigo-400 mr-1" />
+                              <span className="bg-blue-50 text-blue-700 px-4 py-1 rounded-full text-base font-semibold">
+                                {ride.vehicleType}
+                              </span>
+                            </div>
+                          )}
+                          {/* Book Now Button at bottom right */}
+                          <div className="flex-1 flex justify-end items-end">
+                            <button
+                              onClick={() => handleRequest(ride._id)}
+                              className="bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap text-base min-w-[100px]"
+                            >
+                              Book Now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+              </motion.div>
+            )}
+            {/* No results after filtering */}
+            {!loading && filteredRides.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 py-12">
+                <span className="text-gray-500 text-lg">No rides match your filters.</span>
+                <button
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-full font-semibold"
+                  onClick={() => { setFilters({ vehicleType: '', price: 2000, arrivalTime: '', seats: 1 }); setFilteredRides(rides); }}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

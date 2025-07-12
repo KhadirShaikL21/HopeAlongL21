@@ -1,4 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+
+const GEO_API_KEY = "df8a98a451mshcf053dbb1d0a300p1316b6jsnc5fc3d394c49";
+const GEO_API_HOST = "wft-geo-db.p.rapidapi.com";
+
+const fetchCitySuggestions = async (query) => {
+  if (!query) return [];
+  try {
+    const res = await fetch(
+      `https://${GEO_API_HOST}/v1/geo/cities?namePrefix=${encodeURIComponent(
+        query
+      )}&limit=5&types=CITY`,
+      {
+        headers: {
+          "X-RapidAPI-Key": GEO_API_KEY,
+          "X-RapidAPI-Host": GEO_API_HOST,
+        },
+      }
+    );
+    const data = await res.json();
+    return data.data.map((city) => city.city); // Only city name
+  } catch (error) {
+    console.error("GeoDB error:", error.message);
+    return [];
+  }
+};
 
 const CreateRide = () => {
   const [form, setForm] = useState({
@@ -13,6 +38,12 @@ const CreateRide = () => {
   });
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const fromInputRef = useRef();
+  const toInputRef = useRef();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -51,6 +82,65 @@ const CreateRide = () => {
     setLoading(false);
   };
 
+  const handleFromChange = async (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, from: value }));
+    if (value.length > 1) {
+      const suggestions = await fetchCitySuggestions(value);
+      setFromSuggestions(suggestions);
+      setShowFromSuggestions(true);
+    } else {
+      setFromSuggestions([]);
+      setShowFromSuggestions(false);
+    }
+  };
+
+  const handleToChange = async (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({ ...prev, to: value }));
+    if (value.length > 1) {
+      const suggestions = await fetchCitySuggestions(value);
+      setToSuggestions(suggestions);
+      setShowToSuggestions(true);
+    } else {
+      setToSuggestions([]);
+      setShowToSuggestions(false);
+    }
+  };
+
+  const handleFromSuggestionClick = (suggestion) => {
+    setForm((prev) => ({ ...prev, from: suggestion }));
+    setFromSuggestions([]);
+    setShowFromSuggestions(false);
+  };
+
+  const handleToSuggestionClick = (suggestion) => {
+    setForm((prev) => ({ ...prev, to: suggestion }));
+    setToSuggestions([]);
+    setShowToSuggestions(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        fromInputRef.current &&
+        !fromInputRef.current.contains(event.target)
+      ) {
+        setShowFromSuggestions(false);
+      }
+      if (
+        toInputRef.current &&
+        !toInputRef.current.contains(event.target)
+      ) {
+        setShowToSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-white to-cyan-100">
       <form
@@ -61,24 +151,56 @@ const CreateRide = () => {
           Create a Ride
         </h2>
         <div className="flex gap-4">
-          <input
-            type="text"
-            name="from"
-            placeholder="From"
-            value={form.from}
-            onChange={handleChange}
-            required
-            className="w-1/2 px-4 py-2 border rounded-xl"
-          />
-          <input
-            type="text"
-            name="to"
-            placeholder="To"
-            value={form.to}
-            onChange={handleChange}
-            required
-            className="w-1/2 px-4 py-2 border rounded-xl"
-          />
+          <div className="relative w-1/2" ref={fromInputRef}>
+            <input
+              type="text"
+              name="from"
+              placeholder="From"
+              value={form.from}
+              onChange={handleFromChange}
+              required
+              className="w-full px-4 py-2 border rounded-xl"
+              autoComplete="off"
+            />
+            {showFromSuggestions && fromSuggestions.length > 0 && (
+              <ul className="absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg max-h-56 overflow-y-auto">
+                {fromSuggestions.map((suggestion, idx) => (
+                  <li
+                    key={idx}
+                    className="px-4 py-2 hover:bg-indigo-50 cursor-pointer"
+                    onClick={() => handleFromSuggestionClick(suggestion)}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="relative w-1/2" ref={toInputRef}>
+            <input
+              type="text"
+              name="to"
+              placeholder="To"
+              value={form.to}
+              onChange={handleToChange}
+              required
+              className="w-full px-4 py-2 border rounded-xl"
+              autoComplete="off"
+            />
+            {showToSuggestions && toSuggestions.length > 0 && (
+              <ul className="absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg max-h-56 overflow-y-auto">
+                {toSuggestions.map((suggestion, idx) => (
+                  <li
+                    key={idx}
+                    className="px-4 py-2 hover:bg-indigo-50 cursor-pointer"
+                    onClick={() => handleToSuggestionClick(suggestion)}
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
         <div className="flex gap-4">
           <input
@@ -87,7 +209,7 @@ const CreateRide = () => {
             value={form.date}
             onChange={handleChange}
             required
-            className="w-1/2 px-4 py-2 border rounded-xl"
+            className="w-1/3 px-4 py-2 border rounded-xl"
           />
           <input
             type="time"
@@ -95,7 +217,7 @@ const CreateRide = () => {
             value={form.time}
             onChange={handleChange}
             required
-            className="w-1/2 px-4 py-2 border rounded-xl"
+            className="w-1/3 px-4 py-2 border rounded-xl"
           />
         </div>
         <div className="flex gap-4">
