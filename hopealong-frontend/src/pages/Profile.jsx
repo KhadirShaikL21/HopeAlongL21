@@ -59,42 +59,43 @@ useEffect(() => {
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white rounded-xl shadow-lg p-8">
-      <h2 className="text-2xl font-bold mb-6 text-indigo-700">My Profile</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          required
-          placeholder="Name"
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          placeholder="Email"
-          className="w-full border rounded px-3 py-2"
-          disabled
-        />
-        <input
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          placeholder="New Password (leave blank to keep current)"
-          type="password"
-          className="w-full border rounded px-3 py-2"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-2 rounded-xl font-semibold shadow-lg transition"
-        >
-          {loading ? "Saving..." : "Save Changes"}
-        </button>
-      </form>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-100 py-12 px-0 sm:px-0 lg:px-0">
+      <div className="max-w-lg mx-auto mt-10 bg-white rounded-xl shadow-lg p-8">
+        <h2 className="text-2xl font-bold mb-6 text-indigo-700">My Profile</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            placeholder="Name"
+            className="w-full border rounded px-3 py-2"
+          />
+          <input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            placeholder="Email"
+            className="w-full border rounded px-3 py-2"
+          />
+          <input
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="New Password (leave blank to keep current)"
+            type="password"
+            className="w-full border rounded px-3 py-2"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-indigo-700 hover:bg-indigo-800 text-white px-6 py-2 rounded-xl font-semibold shadow-lg transition"
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

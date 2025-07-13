@@ -22,6 +22,10 @@ const rideSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // departureTime: {
+  //   type: String,
+  //   required: true
+  // },
   seatsAvailable: {
     type: Number,
     required: true

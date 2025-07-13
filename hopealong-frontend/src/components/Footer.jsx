@@ -113,10 +113,10 @@ const Footer = () => (
           <span className="text-gray-600">|</span>
           <a href="#" className="hover:text-white transition-colors duration-200">Cookie Policy</a>
           <span className="text-gray-600">|</span>
-          <a href="#" className="hover:text-white transition-colors duration-200">Do not sell my info (California)</a>
+          <a href="#" className="hover:text-white transition-colors duration-200">Do not sell my info (INDIA)</a>
         </div>
         <div className="text-xs text-gray-500">
-          © {new Date().getFullYear()} Your Company Name. All rights reserved.
+          © {new Date().getFullYear()} HopeAlong. All rights reserved.
         </div>
       </div>
     </div>

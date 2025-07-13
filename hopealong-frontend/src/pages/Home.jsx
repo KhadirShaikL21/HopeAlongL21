@@ -43,7 +43,7 @@ const Home = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <a
-            href={user ? "/dashboard" : "/register"}
+            href={user ? "/rides" : "/register"}
             className="bg-white text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-xl font-semibold shadow-lg transition-all duration-300 hover:scale-[1.02] text-center flex items-center justify-center gap-2"
           >
             {user ? "Find Rides" : "Get Started"} <FaArrowRight />
@@ -278,44 +278,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">HopeAlong</h3>
-            <p className="text-gray-400">Making travel smarter, greener, and more social since 2023.</p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="/careers" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="/press" className="hover:text-white transition-colors">Press</a></li>
-              <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li><a href="/help" className="hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="/safety" className="hover:text-white transition-colors">Safety</a></li>
-              <li><a href="/community" className="hover:text-white transition-colors">Community Guidelines</a></li>
-              <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="/cookies" className="hover:text-white transition-colors">Cookie Policy</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
-          © {new Date().getFullYear()} HopeAlong. All rights reserved.
-        </div>
-      </footer>
+      
+      
 
     </div>
   );

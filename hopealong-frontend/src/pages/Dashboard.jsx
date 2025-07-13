@@ -162,15 +162,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-cyan-100 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-cyan-100 py-10 px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto">
         {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-            <p>{error}</p>
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl shadow flex flex-col items-start">
+            <p className="font-semibold">{error}</p>
             <button 
               onClick={() => setError(null)} 
-              className="mt-2 text-red-700 hover:text-red-900"
+              className="mt-2 text-red-700 hover:text-red-900 underline text-sm"
             >
               Dismiss
             </button>
@@ -178,33 +178,37 @@ const Dashboard = () => {
         )}
 
         {/* User Info Card */}
-        <div className="bg-white/90 rounded-3xl shadow-xl p-8 mb-8 flex flex-col items-center">
-          <div className="text-3xl font-extrabold text-indigo-700 mb-2">
-            Welcome, {user.name}
+        <div className="bg-white/90 rounded-3xl shadow-xl p-8 mb-8 flex flex-col items-center border border-indigo-100">
+          <div className="text-3xl font-extrabold text-indigo-700 mb-2 flex items-center gap-2">
+            <span>Welcome, {user.name}</span>
           </div>
           <div className="text-gray-600 mb-1">{user.email}</div>
-          <div className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">
+          <div className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm mt-1">
             Role: {user.role}
           </div>
         </div>
 
         {/* Toggle Buttons */}
-        <div className="flex justify-center mb-6 gap-4">
+        <div className="flex justify-center mb-8 gap-4">
           <button
-            onClick={() => setShowType("rides")}
-            className={`px-4 py-2 rounded-xl font-semibold transition ${
-              showType === "rides" ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 border"
-            }`}
+            onClick={() => setShowType('rides')}
+            className={`px-6 py-2 rounded-xl font-semibold transition shadow border-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base
+              ${showType === 'rides' ? 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white border-indigo-600 scale-105' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
           >
-            Rides
+            <span className="inline-flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 13l2-2m0 0l7-7 7 7M5 11v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" /></svg>
+              Rides
+            </span>
           </button>
           <button
-            onClick={() => setShowType("goods")}
-            className={`px-4 py-2 rounded-xl font-semibold transition ${
-              showType === "goods" ? "bg-indigo-600 text-white" : "bg-white text-indigo-600 border"
-            }`}
+            onClick={() => setShowType('goods')}
+            className={`px-6 py-2 rounded-xl font-semibold transition shadow border-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-base
+              ${showType === 'goods' ? 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white border-indigo-600 scale-105' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
           >
-            Goods
+            <span className="inline-flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 13V7a2 2 0 00-2-2h-4V3a1 1 0 00-1-1h-2a1 1 0 00-1 1v2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2h-4v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2H6a2 2 0 01-2-2v-6" /></svg>
+              Goods
+            </span>
           </button>
         </div>
 
@@ -373,33 +377,37 @@ const Dashboard = () => {
 // Component for displaying a single ride item
 const RideItem = ({ ride, onDelete, isCaptain }) => {
   return (
-    <li className="border rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between">
-      <div className="flex-1">
-        <div className="font-semibold text-indigo-600">
+    <li className="bg-white rounded-2xl shadow border border-blue-100 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:shadow-lg transition-all">
+      <div className="flex-1 flex flex-col gap-1">
+        <div className="font-bold text-indigo-700 text-lg flex items-center gap-2">
+          <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 12.414a2 2 0 00-2.828 0l-4.243 4.243M15 11V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2v-4" /></svg>
           <Link to={`/rides/${ride._id}`} className="hover:underline">
-            {ride.from} → {ride.to}
+            {ride.from} <span className="mx-1">→</span> {ride.to}
           </Link>
         </div>
-        <div className="text-gray-600 text-sm">{ride.date} at {ride.time}</div>
-        <div className="text-gray-500 text-xs">
-          Seats: {ride.seatsAvailable} | Price: ₹{ride.costPerSeat}
+        <div className="flex items-center gap-3 text-gray-500 text-sm mt-1">
+          <span className="inline-flex items-center gap-1">{ride.date ? ride.date.split('T')[0] : ''}</span>
+          <span className="inline-flex items-center gap-1">Arrival: {ride.deliveryTime || ride.time}</span>
+          {ride.departureTime && (
+            <span className="inline-flex items-center gap-1">Departure: {ride.departureTime}</span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs mt-2">
+          <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-semibold">Seats: {ride.seatsAvailable}</span>
+          <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full font-semibold">₹{ride.costPerSeat}</span>
         </div>
       </div>
       {isCaptain && (
-        <div className="flex gap-2 mt-2 md:mt-0">
+        <div className="flex flex-col gap-2 min-w-[100px] items-end">
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to delete this ride?")) {
-                onDelete(ride._id);
-              }
-            }}
-            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
+            onClick={() => { if (window.confirm('Are you sure you want to delete this ride?')) { onDelete(ride._id); } }}
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-semibold shadow"
           >
             Delete
           </button>
           <Link
             to={`/edit-ride/${ride._id}`}
-            className="bg-blue-200 hover:bg-blue-300 text-black px-3 py-1 rounded-lg text-sm font-bold shadow"
+            className="bg-blue-100 hover:bg-blue-200 text-indigo-700 px-3 py-1 rounded-lg text-sm font-bold shadow"
           >
             Edit
           </Link>
@@ -412,37 +420,51 @@ const RideItem = ({ ride, onDelete, isCaptain }) => {
 // Component for displaying a ride request
 const RideRequestItem = ({ request, onRespond }) => {
   return (
-    <li className="border rounded-xl p-4">
-      <div className="font-semibold">
-        {request.user?.name} requested {request.seatsRequested} seat(s) for {request.ride?.from} → {request.ride?.to}
+    <li className="bg-white rounded-2xl shadow border border-blue-100 p-5 flex flex-col gap-2 hover:shadow-lg transition-all">
+      <div className="font-semibold text-indigo-700 flex items-center gap-2">
+        <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
+        {request.user?.name} requested {request.seatsRequested} seat(s) for {request.ride?.from} <span className="mx-1">→</span> {request.ride?.to}
       </div>
-      <div className="text-gray-600 text-sm">Status: <span className={
-        request.status === 'approved' ? 'text-green-600' : 
-        request.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
-      }>{request.status}</span></div>
-      
+      <div className="flex items-center gap-2 text-sm">
+        <span className={`px-3 py-1 rounded-full font-semibold text-xs ${
+          request.status === 'approved' ? 'bg-green-100 text-green-700' :
+          request.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {request.status}
+        </span>
+      </div>
       {request.status === "pending" && (
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => onRespond(request._id, "approved")}
-            className="bg-green-200 hover:bg-green-300 text-black px-3 py-1 rounded-lg text-sm font-bold shadow"
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow"
           >
             Approve
           </button>
           <button
             onClick={() => onRespond(request._id, "rejected")}
-            className="bg-red-200 hover:bg-red-300 text-black px-3 py-1 rounded-lg text-sm font-bold shadow"
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow"
           >
             Reject
           </button>
         </div>
       )}
-      
       {request.status === "approved" && (
         <Link
           to={`/chat/${request._id}`}
-          className="inline-block bg-indigo-200 hover:bg-indigo-300 text-black px-3 py-1 rounded-lg text-sm font-bold shadow mt-2"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+          style={{ minWidth: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
+          <svg
+            className="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2" />
+            <path d="M15 3h-6a2 2 0 00-2 2v2a2 2 0 002 2h6a2 2 0 002-2V5a2 2 0 00-2-2z" />
+          </svg>
           Chat
         </Link>
       )}
@@ -453,27 +475,36 @@ const RideRequestItem = ({ request, onRespond }) => {
 // Component for displaying a user's booking
 const BookingItem = ({ booking }) => {
   return (
-    <li className="border rounded-xl p-4">
-      <div className="font-semibold">{booking.ride?.from} → {booking.ride?.to}</div>
-      <div className="text-gray-600 text-sm">{booking.ride?.date} at {booking.ride?.time}</div>
-      <div className="text-gray-500 text-xs">
-        Seats: {booking.seatsRequested} | Status: <span className={
-          booking.status === 'approved' ? 'text-green-600' : 
-          booking.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
-        }>{booking.status}</span>
+    <li className="bg-white rounded-2xl shadow border border-blue-100 p-5 flex flex-col gap-2 hover:shadow-lg transition-all">
+      <div className="font-semibold text-indigo-700 flex items-center gap-2">
+        <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 12.414a2 2 0 00-2.828 0l-4.243 4.243M15 11V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2v-4" /></svg>
+        {booking.ride?.from} <span className="mx-1">→</span> {booking.ride?.to}
       </div>
-      
+      <div className="flex items-center gap-3 text-gray-500 text-sm mt-1">
+        <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>{booking.ride?.date ? booking.ride.date.split('T')[0] : ''}</span>
+        <span className="inline-flex items-center gap-1">  {booking.ride?.time}-{booking.ride?.departureTime} </span>
+      </div>
+      <div className="flex flex-wrap gap-3 text-xs mt-2">
+        <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-semibold">Seats: {booking.seatsRequested}</span>
+        <span className={`px-3 py-1 rounded-full font-semibold text-xs ${
+          booking.status === 'approved' ? 'bg-green-100 text-green-700' :
+          booking.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {booking.status}
+        </span>
+      </div>
       {booking.ride?.otp && (
-        <div className="my-2 p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 rounded text-sm">
+        <div className="my-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-900 rounded text-xs flex items-center gap-2">
           <strong>OTP:</strong> {booking.ride.otp}
         </div>
       )}
-      
       {booking.status === "approved" && (
         <Link
           to={`/chat/${booking._id}`}
-          className="inline-block bg-indigo-200 hover:bg-indigo-300 text-black px-3 py-1 rounded-lg text-sm font-bold shadow mt-2"
+          className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow mt-2 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ml-0"
+          style={{ minWidth: '110px', justifyContent: 'flex-start' }}
         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2" /><path d="M15 3h-6a2 2 0 00-2 2v2a2 2 0 002 2h6a2 2 0 002-2V5a2 2 0 00-2-2z" /></svg>
           Chat
         </Link>
       )}
@@ -484,13 +515,18 @@ const BookingItem = ({ booking }) => {
 // Component for displaying a goods delivery
 const GoodsDeliveryItem = ({ delivery }) => {
   return (
-    <li className="border rounded-xl p-4">
-      <div className="font-semibold text-indigo-600">
-        {delivery.from} → {delivery.to}
+    <li className="bg-white rounded-2xl shadow border border-blue-100 p-5 flex flex-col gap-2 hover:shadow-lg transition-all">
+      <div className="font-bold text-indigo-700 text-lg flex items-center gap-2">
+        <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 17v-6a2 2 0 012-2h6a2 2 0 012 2v6M9 17H5a2 2 0 01-2-2v-6a2 2 0 012-2h4m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2" /></svg>
+        {delivery.from} <span className="mx-1">→</span> {delivery.to}
       </div>
-      <div className="text-gray-600 text-sm">{delivery.date} at {delivery.time}</div>
-      <div className="text-gray-500 text-xs">
-        Vehicle: {delivery.vehicleType} | Capacity: {delivery.capacity}
+      <div className="flex items-center gap-3 text-gray-500 text-sm mt-1">
+        <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>{delivery.date}</span>
+        <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3" /></svg>{delivery.time}</span>
+      </div>
+      <div className="flex flex-wrap gap-3 text-xs mt-2">
+        <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-semibold">Vehicle: {delivery.vehicleType}</span>
+        <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-semibold">Capacity: {delivery.capacity}</span>
       </div>
     </li>
   );
@@ -499,30 +535,32 @@ const GoodsDeliveryItem = ({ delivery }) => {
 // Component for displaying a goods request
 const GoodsRequestItem = ({ request, onRespond, isUser }) => {
   return (
-    <li className="border rounded-xl p-4">
-      <div className="font-semibold">
+    <li className="bg-white rounded-2xl shadow border border-blue-100 p-5 flex flex-col gap-2 hover:shadow-lg transition-all">
+      <div className="font-semibold text-indigo-700 flex items-center gap-2">
+        <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 17v-6a2 2 0 012-2h6a2 2 0 012 2v6M9 17H5a2 2 0 01-2-2v-6a2 2 0 012-2h4m0 0V5a2 2 0 012-2h2a2 2 0 012 2v2" /></svg>
         {!isUser && `${request.user?.name} requested delivery for `}
-        {request.delivery?.from} → {request.delivery?.to}
+        {request.delivery?.from} <span className="mx-1">→</span> {request.delivery?.to}
       </div>
-      <div className="text-gray-600 text-sm">
-        Status: <span className={
-          request.status === 'approved' ? 'text-green-600' : 
-          request.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
-        }>{request.status}</span>
+      <div className="flex items-center gap-2 text-sm">
+        <span className={`px-3 py-1 rounded-full font-semibold text-xs ${
+          request.status === 'approved' ? 'bg-green-100 text-green-700' :
+          request.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {request.status}
+        </span>
       </div>
       <div className="text-gray-500 text-xs">Item: {request.itemDetails}</div>
-      
       {!isUser && request.status === "pending" && (
         <div className="flex gap-2 mt-2">
           <button
             onClick={() => onRespond(request._id, "approved")}
-            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm"
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow"
           >
             Approve
           </button>
           <button
             onClick={() => onRespond(request._id, "rejected")}
-            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm"
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow"
           >
             Reject
           </button>
