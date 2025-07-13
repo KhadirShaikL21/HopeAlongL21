@@ -161,7 +161,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **JamiKishore21** - Original Author & Maintainer
 - **KhadirShaikL21** - Active Contributor & Fork Maintainer
-- **Dastagiri** - Contributor  
+- **Dastagiri** - Contributor
 - **Kishore** - Contributor
 
 ## 🔄 Contributing to Main Repository
@@ -174,6 +174,7 @@ This is a fork of the main HopeAlong repository. To contribute changes back:
 4. **Sync with upstream** regularly: `git pull upstream main`
 
 ### Sync with Main Repository
+
 ```bash
 # Fetch latest changes from main repo
 git fetch upstream
