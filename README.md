@@ -159,7 +159,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-- **KhadirShaik** - Project Owner
+- **JamiKishore21** - Original Author
 - **Dastagiri** - Contributor
 - **Kishore** - Contributor
 
