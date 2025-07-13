@@ -32,7 +32,7 @@ A comprehensive platform that connects people for ride sharing and goods deliver
 This project follows a monorepo structure with separate frontend and backend applications:
 
 ```
-HopeAlong/
+HopeAlongL21/
 ├── hopealong-frontend/    # React frontend application
 └── server/               # Node.js backend application
 ```
@@ -69,8 +69,8 @@ HopeAlong/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/JamiKishore21/HopeAlong.git
-   cd HopeAlong
+   git clone https://github.com/KhadirShaikL21/HopeAlongL21.git
+   cd HopeAlongL21
    ```
 
 2. **Setup Backend**
