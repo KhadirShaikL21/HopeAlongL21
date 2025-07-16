@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { API_BASE_URL } from "../config/api.js";
 import { authFetch } from "../utils/auth.js";
+import { debugAuth, testAuthFetch } from "../utils/debugAuth.js";
 
 const GEO_API_KEY = "df8a98a451mshcf053dbb1d0a300p1316b6jsnc5fc3d394c49";
 const GEO_API_HOST = "wft-geo-db.p.rapidapi.com";
@@ -55,13 +56,27 @@ const CreateRide = () => {
     e.preventDefault();
     setLoading(true);
     setMsg("");
+    
+    // Debug authentication state
+    console.log('🔍 Debug before ride creation:');
+    debugAuth();
+    await testAuthFetch();
+    
     try {
+      console.log('📤 Sending ride creation request...');
+      console.log('Form data:', form);
+      
       const res = await authFetch(`${API_BASE_URL}/api/rides`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+      
+      console.log('📥 Response status:', res.status);
+      console.log('📥 Response headers:', Object.fromEntries(res.headers.entries()));
+      
       const data = await res.json();
+      console.log('📥 Response data:', data);
       if (res.ok) {
         setMsg("Ride created successfully!");
         setForm({
@@ -265,6 +280,19 @@ const CreateRide = () => {
         >
           {loading ? "Creating..." : "Create Ride"}
         </button>
+        
+        <button
+          type="button"
+          onClick={async () => {
+            console.log('🔍 Manual Auth Debug:');
+            debugAuth();
+            await testAuthFetch();
+          }}
+          className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-xl font-semibold shadow-lg transition"
+        >
+          Debug Auth (Check Console)
+        </button>
+        
         {msg && (
           <div className="text-center mt-2 text-indigo-700 font-medium">{msg}</div>
         )}

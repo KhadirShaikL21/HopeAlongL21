@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../config/api.js";
 import { authFetch } from "../utils/auth.js";
+import { debugAuth } from "../utils/debugAuth.js";
 
 const Dashboard = () => {
   const { user, loading: authLoading, refreshUser } = useAuth();
@@ -31,8 +32,13 @@ const Dashboard = () => {
       setDataLoading(true);
       setError(null);
 
+      console.log('🔍 Dashboard: Starting data fetch...');
+      console.log('User role:', user?.role);
+      debugAuth();
+
       try {
         if (user.role === "captain") {
+          console.log('📡 Fetching captain data...');
           const [ridesRes, rideReqRes, goodsRes, goodsReqRes] = await Promise.all([
             authFetch(`${API_BASE_URL}/api/rides/my-offered`),
             authFetch(`${API_BASE_URL}/api/riderequests/captain`),
