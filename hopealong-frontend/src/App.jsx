@@ -39,14 +39,24 @@ const App = () => {
 
     if (token && userParam) {
       try {
+        console.log('Google OAuth callback received:', { token: token.substring(0, 10) + '...', userParam });
+        
         // Store token in localStorage
         localStorage.setItem('token', token);
         
         // Parse and set user data
         const userData = JSON.parse(decodeURIComponent(userParam));
-        setUser(userData);
+        console.log('Parsed user data:', userData);
+        
+        if (setUser && typeof setUser === 'function') {
+          setUser(userData);
+          console.log('User set successfully');
+        } else {
+          console.error('setUser is not a function:', typeof setUser);
+        }
         
         // Clean up URL and redirect to dashboard
+        window.history.replaceState({}, document.title, '/dashboard');
         navigate('/dashboard', { replace: true });
       } catch (error) {
         console.error('Error handling Google OAuth callback:', error);

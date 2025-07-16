@@ -104,7 +104,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    refreshUser
+    refreshUser,
+    setUser
   };
 
   return (
