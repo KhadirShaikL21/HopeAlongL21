@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const Profile = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -8,7 +9,7 @@ const Profile = () => {
 
 useEffect(() => {
   setLoading(true);
-  fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" })
+  authFetch(`${API_BASE_URL}/api/auth/me`)
     .then(res => {
       if (!res.ok) throw new Error("Failed to fetch profile");
       return res.json();
@@ -29,10 +30,9 @@ useEffect(() => {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+    const res = await authFetch(`${API_BASE_URL}/api/auth/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(form),
     });
     setLoading(false);

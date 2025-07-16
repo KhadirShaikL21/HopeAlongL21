@@ -11,10 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    // No need to call API - logout function already clears localStorage
     logout();
     navigate("/login");
   };

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/notifications`, {
-      credentials: "include",
-    })
+    authFetch(`${API_BASE_URL}/api/notifications`)
       .then(res => res.json())
-      .then(data => setNotifications(data.notifications || []));
+      .then(data => setNotifications(data.notifications || []))
+      .catch(err => console.log('Failed to fetch notifications:', err));
   }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
