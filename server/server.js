@@ -19,6 +19,7 @@ const rideRequestRoutes = require('./routes/rideRequestRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const ChatMessage = require('./models/ChatMessage');
 const PaymentRoutes = require('./routes/PaymentRoutes');
+const testRoutes = require('./routes/testRoutes');
 require('./config/passport');
 dotenv.config();
 
@@ -164,6 +165,7 @@ app.use('/api/riderequests', rideRequestRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use("/api/payments", PaymentRoutes);
+app.use('/api/test', testRoutes);
 
 // --- Start server ---
 const PORT = process.env.PORT || 5000;
