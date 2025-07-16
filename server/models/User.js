@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String }, // for Google login later
   role: {
     type: String,
-    enum: ['user', 'captain'],
-    default: 'user',
+    enum: ['user', 'captain', 'passenger'],
+    default: 'passenger',
   },
   phone: String,
   profilePicture: String,

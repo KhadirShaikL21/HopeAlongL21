@@ -1,7 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { API_BASE_URL } from "./config/api.js";
+import { useAuth } from "./context/AuthContext.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
@@ -26,6 +27,33 @@ const socket = io(API_BASE_URL, { withCredentials: true });
 
 const App = () => {
   const [popup, setPopup] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+    const userParam = urlParams.get('user');
+
+    if (token && userParam) {
+      try {
+        // Store token in localStorage
+        localStorage.setItem('token', token);
+        
+        // Parse and set user data
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        setUser(userData);
+        
+        // Clean up URL and redirect to dashboard
+        navigate('/dashboard', { replace: true });
+      } catch (error) {
+        console.error('Error handling Google OAuth callback:', error);
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [location, navigate, setUser]);
 
   useEffect(() => {
     socket.on("message", (msg) => {
