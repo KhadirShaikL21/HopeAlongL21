@@ -23,7 +23,11 @@ import LiveTracking from "./pages/LiveTracking.jsx";
 import Payment from "./pages/Payment.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 
-const socket = io(API_BASE_URL, { withCredentials: true });
+const socket = io(API_BASE_URL, { 
+  auth: { 
+    token: localStorage.getItem('token') 
+  } 
+});
 
 const App = () => {
   const [popup, setPopup] = useState(null);

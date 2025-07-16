@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const CreateGoodsDelivery = () => {
   const [form, setForm] = useState({
@@ -22,10 +23,9 @@ const CreateGoodsDelivery = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/goods`, {
+    const res = await authFetch(`${API_BASE_URL}/api/goods`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify(form),
     });
     setLoading(false);

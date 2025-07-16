@@ -3,9 +3,14 @@ import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useAuth } from "../context/AuthContext.jsx";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 // Only create the socket once
-const socket = io(API_BASE_URL, { withCredentials: true });
+const socket = io(API_BASE_URL, { 
+  auth: { 
+    token: localStorage.getItem('token') 
+  } 
+});
 
 const ChatWindow = () => {
   const { roomId } = useParams();
@@ -18,9 +23,7 @@ const ChatWindow = () => {
   // Fetch past messages on mount
   useEffect(() => {
     if (!roomId) return;
-    fetch(`${API_BASE_URL}/api/chat/${roomId}`, {
-      credentials: "include",
-    })
+    authFetch(`${API_BASE_URL}/api/chat/${roomId}`)
       .then(res => res.json())
       .then(data => setMessages(data || []));
   }, [roomId]);
@@ -28,7 +31,7 @@ const ChatWindow = () => {
   // Fetch ride or delivery details for sidebar using tripId and tripModel from chat room (not messages)
   useEffect(() => {
     if (!roomId) return;
-    fetch(`${API_BASE_URL}/api/chatroom/${roomId}`, { credentials: "include" })
+    authFetch(`${API_BASE_URL}/api/chatroom/${roomId}`)
       .then(res => res.json())
       .then(room => {
         if (!room || !room.tripId || !room.tripModel) {
@@ -37,11 +40,11 @@ const ChatWindow = () => {
         }
         const { tripId, tripModel } = room;
         if (tripModel === "Ride") {
-          fetch(`${API_BASE_URL}/api/rides/${tripId}`, { credentials: "include" })
+          authFetch(`${API_BASE_URL}/api/rides/${tripId}`)
             .then(res => res.ok ? res.json() : null)
             .then(data => setRide(data?.ride || { msg: "Ride not found for this chat." }));
         } else if (tripModel === "GoodsDelivery") {
-          fetch(`${API_BASE_URL}/api/goods/${tripId}`, { credentials: "include" })
+          authFetch(`${API_BASE_URL}/api/goods/${tripId}`)
             .then(res => res.ok ? res.json() : null)
             .then(data => setRide(data?.goods || { msg: "Goods delivery not found for this chat." }));
         } else {

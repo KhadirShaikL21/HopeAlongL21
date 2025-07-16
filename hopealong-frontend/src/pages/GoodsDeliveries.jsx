@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 import { 
   FaTruck, 
   FaMapMarkerAlt, 
@@ -124,10 +125,9 @@ const GoodsDeliveries = () => {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/goods-requests`, {
+      const res = await authFetch(`${API_BASE_URL}/api/goods-requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ deliveryId, itemDetails }),
       });
       const data = await res.json();

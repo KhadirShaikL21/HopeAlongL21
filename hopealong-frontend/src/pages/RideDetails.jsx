@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const RideDetails = () => {
   const { id } = useParams();
@@ -10,7 +11,7 @@ const RideDetails = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/rides/${id}`, { credentials: "include" })
+    authFetch(`${API_BASE_URL}/api/rides/${id}`)
       .then(res => res.json())
       .then(data => {
         setRide(data.ride || data);
@@ -19,7 +20,7 @@ const RideDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" })
+    authFetch(`${API_BASE_URL}/api/auth/me`)
       .then(res => res.json())
       .then(data => setUser(data.user));
   }, []);
@@ -52,9 +53,8 @@ const RideDetails = () => {
           onClick={async () => {
             const otp = window.prompt("Enter OTP to start the ride:");
             if (!otp) return alert("OTP is required!");
-            const res = await fetch(`${API_BASE_URL}/api/rides/${ride._id}/start`, {
+            const res = await authFetch(`${API_BASE_URL}/api/rides/${ride._id}/start`, {
               method: "POST",
-              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ otp }),
             });
@@ -74,9 +74,8 @@ const RideDetails = () => {
         <button
           className="mt-4 bg-green-200 hover:bg-green-300 text-black px-4 py-2 rounded"
           onClick={async () => {
-            await fetch(`${API_BASE_URL}/api/rides/${ride._id}/complete`, {
+            await authFetch(`${API_BASE_URL}/api/rides/${ride._id}/complete`, {
               method: "POST",
-              credentials: "include",
             });
             navigate(`/payment/${ride._id}`);
           }}

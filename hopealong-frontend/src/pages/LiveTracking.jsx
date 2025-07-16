@@ -3,8 +3,13 @@ import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from "@react-go
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
-const socket = io(API_BASE_URL, { withCredentials: true });
+const socket = io(API_BASE_URL, { 
+  auth: { 
+    token: localStorage.getItem('token') 
+  } 
+});
 
 const containerStyle = {
   width: "100%",
@@ -86,7 +91,7 @@ const LiveTracking = () => {
 
   // Fetch user info
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" })
+    authFetch(`${API_BASE_URL}/api/auth/me`)
       .then(res => res.json())
       .then(data => setUser(data.user));
   }, []);
@@ -105,9 +110,8 @@ const LiveTracking = () => {
         <button
           className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
           onClick={async () => {
-            await fetch(`${API_BASE_URL}/api/rides/${ride._id}/complete`, {
+            await authFetch(`${API_BASE_URL}/api/rides/${ride._id}/complete`, {
               method: "POST",
-              credentials: "include",
             });
             window.location.href = `/payment/${ride._id}`;
           }}

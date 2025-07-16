@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const GEO_API_KEY = "df8a98a451mshcf053dbb1d0a300p1316b6jsnc5fc3d394c49";
 const GEO_API_HOST = "wft-geo-db.p.rapidapi.com";
@@ -55,10 +56,9 @@ const CreateRide = () => {
     setLoading(true);
     setMsg("");
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rides`, {
+      const res = await authFetch(`${API_BASE_URL}/api/rides`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(form),
       });
       const data = await res.json();

@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../config/api.js";
+import { authFetch } from "../utils/auth.js";
 
 const RequestDetails = () => {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/riderequests/${id}`, {
-      credentials: "include",
-    })
+    authFetch(`${API_BASE_URL}/api/riderequests/${id}`)
       .then(res => res.json())
       .then(data => setRequest(data.request));
   }, [id]);

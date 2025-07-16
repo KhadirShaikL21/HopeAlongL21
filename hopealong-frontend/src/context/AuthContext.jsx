@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       const res = await axios.post(
         `${API_BASE_URL}/api/auth/register`,
         userData,
-        { withCredentials: true, timeout: 5000 }
+        { timeout: 5000 }
       );
       setUser(res.data.user);
       return { success: true };

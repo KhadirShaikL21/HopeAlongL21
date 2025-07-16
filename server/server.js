@@ -7,6 +7,7 @@ const passport = require('passport');
 const session = require('express-session');
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 
 const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes.js');
@@ -26,7 +27,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// --- Socket.io setup ---
+// --- Socket.io setup with JWT authentication ---
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
@@ -35,6 +36,24 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+});
+
+// Socket.io JWT authentication middleware
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+      next();
+    } else {
+      // Allow connection without auth for now, but could be restricted
+      next();
+    }
+  } catch (err) {
+    console.log('Socket auth error:', err.message);
+    next(); // Allow connection anyway
+  }
 });
 
 // --- User-to-socket mapping for notifications ---
