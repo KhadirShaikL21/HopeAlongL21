@@ -15,13 +15,23 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
       const res = await axios.get(`${API_BASE_URL}/api/auth/me`, {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         timeout: 5000
       });
       setUser(res.data.user);
     } catch (err) {
       setUser(null);
+      localStorage.removeItem('token'); // Remove invalid token
       setError(err.response?.data?.message || 'Session expired. Please login again.');
     } finally {
       setLoading(false);
@@ -39,13 +49,19 @@ export const AuthProvider = ({ children }) => {
       const res = await axios.post(
         `${API_BASE_URL}/api/auth/login`,
         { email, password },
-        { withCredentials: true, timeout: 5000 }
+        { timeout: 5000 }
       );
+      
+      // Store token in localStorage for cross-origin compatibility
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+      }
+      
       setUser(res.data.user);
       return { success: true };
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
-      return { success: false };
+      return { success: false, error: err.response?.data?.message || 'Login failed. Please try again.' };
     } finally {
       setLoading(false);
     }
@@ -72,11 +88,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(
-        `${API_BASE_URL}/api/auth/logout`,
-        {},
-        { withCredentials: true, timeout: 5000 }
-      );
+      // Clear token from localStorage
+      localStorage.removeItem('token');
       setUser(null);
       navigate('/login');
     } catch (err) {

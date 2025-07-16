@@ -55,16 +55,10 @@ exports.loginUser = async (req, res) => {
     // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    // Set token as HTTP-only cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-
+    // Send token in response instead of cookie for cross-origin compatibility
     res.status(200).json({
       msg: "Login successful",
+      token: token,
       user: {
         id: user._id,
         name: user.name,
