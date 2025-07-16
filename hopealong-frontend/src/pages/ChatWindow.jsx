@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useAuth } from "../context/AuthContext.jsx";
+import { API_BASE_URL } from "../config/api.js";
 
 // Only create the socket once
-const socket = io("http://localhost:5000", { withCredentials: true });
+const socket = io(API_BASE_URL, { withCredentials: true });
 
 const ChatWindow = () => {
   const { roomId } = useParams();
@@ -17,7 +18,7 @@ const ChatWindow = () => {
   // Fetch past messages on mount
   useEffect(() => {
     if (!roomId) return;
-    fetch(`http://localhost:5000/api/chat/${roomId}`, {
+    fetch(`${API_BASE_URL}/api/chat/${roomId}`, {
       credentials: "include",
     })
       .then(res => res.json())
@@ -27,7 +28,7 @@ const ChatWindow = () => {
   // Fetch ride or delivery details for sidebar using tripId and tripModel from chat room (not messages)
   useEffect(() => {
     if (!roomId) return;
-    fetch(`http://localhost:5000/api/chatroom/${roomId}`, { credentials: "include" })
+    fetch(`${API_BASE_URL}/api/chatroom/${roomId}`, { credentials: "include" })
       .then(res => res.json())
       .then(room => {
         if (!room || !room.tripId || !room.tripModel) {
@@ -36,11 +37,11 @@ const ChatWindow = () => {
         }
         const { tripId, tripModel } = room;
         if (tripModel === "Ride") {
-          fetch(`http://localhost:5000/api/rides/${tripId}`, { credentials: "include" })
+          fetch(`${API_BASE_URL}/api/rides/${tripId}`, { credentials: "include" })
             .then(res => res.ok ? res.json() : null)
             .then(data => setRide(data?.ride || { msg: "Ride not found for this chat." }));
         } else if (tripModel === "GoodsDelivery") {
-          fetch(`http://localhost:5000/api/goods/${tripId}`, { credentials: "include" })
+          fetch(`${API_BASE_URL}/api/goods/${tripId}`, { credentials: "include" })
             .then(res => res.ok ? res.json() : null)
             .then(data => setRide(data?.goods || { msg: "Goods delivery not found for this chat." }));
         } else {

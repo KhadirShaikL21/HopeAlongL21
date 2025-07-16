@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { API_BASE_URL } from "../config/api.js";
 import { 
   FaTruck, 
   FaMapMarkerAlt, 
@@ -62,7 +63,7 @@ const GoodsDeliveries = () => {
     const fetchDeliveries = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:5000/api/goods");
+        const res = await fetch(`${API_BASE_URL}/api/goods`);
         const data = await res.json();
         const withRatings = (data.deliveries || []).map((d) => ({
           ...d,
@@ -123,7 +124,7 @@ const GoodsDeliveries = () => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/goods-requests", {
+      const res = await fetch(`${API_BASE_URL}/api/goods-requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

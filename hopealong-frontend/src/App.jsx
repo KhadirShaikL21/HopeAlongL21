@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { API_BASE_URL } from "./config/api.js";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
@@ -21,7 +22,7 @@ import LiveTracking from "./pages/LiveTracking.jsx";
 import Payment from "./pages/Payment.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 
-const socket = io("http://localhost:5000", { withCredentials: true });
+const socket = io(API_BASE_URL, { withCredentials: true });
 
 const App = () => {
   const [popup, setPopup] = useState(null);

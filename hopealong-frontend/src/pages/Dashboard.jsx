@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../config/api.js";
 
 const Dashboard = () => {
   const { user, loading: authLoading, refreshUser } = useAuth();
@@ -32,10 +33,10 @@ const Dashboard = () => {
       try {
         if (user.role === "captain") {
           const [ridesRes, rideReqRes, goodsRes, goodsReqRes] = await Promise.all([
-            fetch("http://localhost:5000/api/rides/my-offered", { credentials: "include" }),
-            fetch("http://localhost:5000/api/riderequests/captain", { credentials: "include" }),
-            fetch("http://localhost:5000/api/goods", { credentials: "include" }),
-            fetch("http://localhost:5000/api/goods-requests/captain", { credentials: "include" })
+            fetch(`${API_BASE_URL}/api/rides/my-offered`, { credentials: "include" }),
+            fetch(`${API_BASE_URL}/api/riderequests/captain`, { credentials: "include" }),
+            fetch(`${API_BASE_URL}/api/goods`, { credentials: "include" }),
+            fetch(`${API_BASE_URL}/api/goods-requests/captain`, { credentials: "include" })
           ]);
 
           const [rides, rideRequestsData, goodsData, goodsReqData] = await Promise.all([
@@ -56,8 +57,8 @@ const Dashboard = () => {
           setGoodsRequests(goodsReqData.requests || []);
         } else {
           const [bookingsRes, goodsUserReqRes] = await Promise.all([
-            fetch("http://localhost:5000/api/riderequests/my-requests", { credentials: "include" }),
-            fetch("http://localhost:5000/api/goods-requests/user", { credentials: "include" })
+            fetch(`${API_BASE_URL}/api/riderequests/my-requests`, { credentials: "include" }),
+            fetch(`${API_BASE_URL}/api/goods-requests/user`, { credentials: "include" })
           ]);
 
           const [bookingsData, goodsUserReqData] = await Promise.all([
@@ -85,7 +86,7 @@ const Dashboard = () => {
 
   const handleRespond = async (requestId, status) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/riderequests/respond/${requestId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/riderequests/respond/${requestId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -105,7 +106,7 @@ const Dashboard = () => {
 
   const handleGoodsRequestRespond = async (requestId, status) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/goods-requests/${requestId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/goods-requests/${requestId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -131,7 +132,7 @@ const Dashboard = () => {
 
   const deleteRide = async (rideId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/rides/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${rideId}`, {
         method: "DELETE",
         credentials: "include",
       });

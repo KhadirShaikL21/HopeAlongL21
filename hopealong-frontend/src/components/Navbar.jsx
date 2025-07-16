@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import { useAuth } from "../context/AuthContext.jsx";
 import { LogIn, LogOut } from "lucide-react";
+import { API_BASE_URL } from "../config/api.js";
 
 const Navbar = () => {
   const location = useLocation();
@@ -10,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await fetch("http://localhost:5000/api/auth/logout", {
+    await fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

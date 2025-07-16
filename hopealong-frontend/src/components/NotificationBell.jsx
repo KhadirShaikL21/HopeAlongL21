@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
+import { API_BASE_URL } from "../config/api.js";
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/notifications", {
+    fetch(`${API_BASE_URL}/api/notifications`, {
       credentials: "include",
     })
       .then(res => res.json())

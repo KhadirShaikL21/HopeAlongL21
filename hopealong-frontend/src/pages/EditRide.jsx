@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api.js";
 
 const GEO_API_KEY = "df8a98a451mshcf053dbb1d0a300p1316b6jsnc5fc3d394c49";
 const GEO_API_HOST = "wft-geo-db.p.rapidapi.com";
@@ -53,7 +54,7 @@ const EditRide = () => {
     // Fetch ride details to pre-fill the form
     const fetchRide = async () => {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/rides`);
+      const res = await fetch(`${API_BASE_URL}/api/rides`);
       const rides = await res.json();
       const ride = rides.find((r) => r._id === id);
       if (ride) {
@@ -141,7 +142,7 @@ const EditRide = () => {
     setLoading(true);
     setMsg("");
     try {
-      const res = await fetch(`http://localhost:5000/api/rides/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

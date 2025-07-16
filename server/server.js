@@ -29,7 +29,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? [process.env.FRONTEND_URL, 'https://your-frontend-url.vercel.app'] 
+      ? process.env.FRONTEND_URL 
       : ['http://localhost:5173', 'http://localhost:3000'],
     methods: ['GET', 'POST'],
     credentials: true,
@@ -114,7 +114,7 @@ app.set('userSocketMap', userSocketMap);
 // --- Middleware ---
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, 'https://your-frontend-url.vercel.app'] 
+    ? process.env.FRONTEND_URL 
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
 }));
