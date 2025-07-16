@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "src": "/[^.]+",
+      "dest": "/",
+      "status": 200
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://hopealongl21.onrender.com"
+  }
+}
