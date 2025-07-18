@@ -25,10 +25,10 @@
 
 | Role             | Name                | Responsibilities                                       |
 | ---------------- | ------------------- | ------------------------------------------------------ |
-| **🎯 Team Lead** | **Shaik Khadir**    | Full-stack development, deployment, project management |
-| **💻 Developer** | **Shaik Dastagiri** | Frontend development, UI/UX design                     |
-| **🔧 Developer** | **Jami Kishore**    | Backend development, API design                        |
-| **📊 Developer** | **Paka Abhiram**    | Database design, testing, documentation                |
+| **🎯 Team Lead** | **Shaik Khadir**    | Full-stack development, deployment, project management,Database design, |
+| **💻 Developer** | **Shaik Dastagiri** |   Backend development                                  |
+| **🔧 Developer** | **Jami Kishore**    |   Frontend development                                |
+| **📊 Developer** | **Paka Abhiram**    |  testing, documentation                               |
 
 ---
 
