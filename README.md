@@ -435,6 +435,7 @@ HopeAlong addresses the growing need for efficient transportation and delivery s
 - **Team Lead:** Shaik Khadir - [GitHub](https://github.com/KhadirShaikL21)
 - **Email:** khadirshaik2005@gmail.com
 - **Project Repository:** [HopeAlongL21](https://github.com/KhadirShaikL21/HopeAlongL21)
+- **Project Repository:**[LibnkedIn]((https://www.linkedin.com/in/khadirshaik1903/))
 
 ### **Demo Credentials**
 
