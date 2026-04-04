@@ -76,11 +76,17 @@ export const AuthProvider = ({ children }) => {
         userData,
         { timeout: 5000 }
       );
+      
+      // Store token in localStorage for auto-login after registration
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+      }
+      
       setUser(res.data.user);
       return { success: true };
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
-      return { success: false };
+      return { success: false, error: err.response?.data?.message || 'Registration failed. Please try again.' };
     } finally {
       setLoading(false);
     }

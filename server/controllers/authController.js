@@ -7,6 +7,11 @@ exports.registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({ msg: "Name, email, and password are required" });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ msg: "User already exists" });
@@ -20,13 +25,26 @@ exports.registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role
+      role: role || 'passenger'
     });
 
     await newUser.save();
 
-    res.status(201).json({ msg: "User registered successfully" });
+    // Create token for auto-login after registration
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({ 
+      msg: "User registered successfully",
+      token: token,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      }
+    });
   } catch (err) {
+    console.error("Registration error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };

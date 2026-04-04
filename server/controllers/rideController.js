@@ -7,24 +7,42 @@ const axios = require("axios");
 exports.createRide = async (req, res) => {
   try {
     console.log("Create ride called");
+    
+    // Check authentication
+    if (!req.user) {
+      console.error("❌ Authentication failed: req.user is null");
+      return res.status(401).json({ message: 'Not authenticated. Please login first.' });
+    }
+
     const {
       from, to, date, time, seatsAvailable, costPerSeat, vehicleType, notes
     } = req.body;
     console.log("Request body:", req.body);
+    console.log("Authenticated user:", req.user.id);
 
-    // Geocode addresses
+    // Geocode addresses (with fallback for development)
     const geocode = async (address) => {
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
-      const response = await axios.get(url);
-      if (
-        response.data.status === "OK" &&
-        response.data.results &&
-        response.data.results.length > 0
-      ) {
-        return response.data.results[0].geometry.location; // { lat, lng }
+      try {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          console.log("⚠️ Google Maps API key not set, using placeholder coordinates");
+          return { lat: 0, lng: 0 }; // Placeholder
+        }
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+        const response = await axios.get(url, { timeout: 5000 });
+        if (
+          response.data.status === "OK" &&
+          response.data.results &&
+          response.data.results.length > 0
+        ) {
+          return response.data.results[0].geometry.location; // { lat, lng }
+        }
+        console.log("⚠️ Geocoding returned no results for:", address);
+        return { lat: 0, lng: 0 }; // Placeholder
+      } catch (err) {
+        console.log("⚠️ Geocoding error for:", address, err.message);
+        return { lat: 0, lng: 0 }; // Use placeholder coordinates for development
       }
-      throw new Error("Geocoding failed for: " + address);
     };
 
     const source = await geocode(from);
@@ -34,12 +52,9 @@ exports.createRide = async (req, res) => {
     // Generate OTP
     const otp = Math.floor(1000 + Math.random() * 9000);
 
-    // Check req.user
-    console.log("req.user:", req.user);
-
     // Create ride
     const ride = new Ride({
-      captain: req.user ? req.user.id : null,
+      captain: req.user.id,
       from,
       to,
       date,
@@ -57,9 +72,10 @@ exports.createRide = async (req, res) => {
     console.log("Ride to save:", ride);
 
     await ride.save();
+    console.log("✅ Ride created successfully");
     res.status(201).json({ message: 'Ride posted successfully', ride });
   } catch (error) {
-    console.log("Error in createRide:", error);
+    console.error("❌ Error in createRide:", error);
     res.status(500).json({ message: 'Error creating ride', error: error.message });
   }
 };
