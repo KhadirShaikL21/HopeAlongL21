@@ -28,11 +28,21 @@ const app = express();
 const server = http.createServer(app);
 
 // --- Socket.io setup with JWT authentication ---
+// Build CORS origins list based on environment
+const getAllowedOrigins = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['https://hopealong.vercel.app'];
+  }
+  // Development: allow multiple sources
+  const devOrigins = [];
+  if (process.env.FRONTEND_URL) devOrigins.push(process.env.FRONTEND_URL);
+  devOrigins.push('http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173');
+  return devOrigins;
+};
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL 
-      : ['http://localhost:5173', 'http://localhost:3000'],
+    origin: getAllowedOrigins(),
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -133,9 +143,7 @@ app.set('userSocketMap', userSocketMap);
 
 // --- Middleware ---
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: getAllowedOrigins(),
   credentials: true,
 }));
 
@@ -188,4 +196,13 @@ app.use('/api/test', testRoutes);
 
 // --- Start server ---
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const SERVER_URL = NODE_ENV === 'production' 
+  ? (process.env.BACKEND_URL || 'https://hopealongl21.onrender.com')
+  : `http://localhost:${PORT}`;
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on ${SERVER_URL}`);
+  console.log(`📍 Environment: ${NODE_ENV}`);
+  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'Set FRONTEND_URL in environment'}`);
+});
